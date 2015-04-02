@@ -1,0 +1,27 @@
+<!-- adapted from http://www.blastam.com/blog/index.php/2013/07/ga-universal-analytics-phonegap-mobile-apps/ -->
+<!DOCTYPE html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+    <script src="cocoon.js"></script>
+    <script>
+
+      Cocoon.App.forward("console.log('Hello from the WebView');");
+
+      // Disable the input in CocoonJS (we do not want to have both input in CocoonJS and the WebView)
+      Cocoon.Touch.disable();
+
+      // Loading local Google Analytics
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','analytics.js','ga');
+
+      // Once we're loaded, we can inform the Canvas+ view that it can
+      // start sending stuff
+      Cocoon.App.forward("console.log('Analytics interface ready, informing parent');");
+      Cocoon.App.forward('window.gaInterfaceIsReady()');
+
+    </script>
+  </head>
+</html>

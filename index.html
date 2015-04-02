@@ -1,0 +1,100 @@
+<!-- adapted from http://remvst.com/article-49-using-google-analytics-within-cocoonjs.html -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+  <title>Document</title>
+  <script src="cocoon.js"></script>
+  <script>
+
+    var interfaceReady = false;
+    var queue = [];
+
+    var flushQueue = function(){
+      var cmd;
+      while(cmd = queue.shift()){
+        forwardCmd(cmd);
+      }
+    };
+
+    var forwardCmd = function(cmd){
+      Cocoon.App.forwardAsync(cmd);
+    };
+
+    var addToQueue = function(cmd){
+      queue.push(cmd);
+      if(interfaceReady){
+        flushQueue();
+      }
+    };
+
+    // CocoonJS loading event doesn't work too well, so we need to wait for an actual answer
+    window.gaInterfaceIsReady = function(){
+      interfaceReady = true;
+      flushQueue();
+      console.log('ScreenView sent');
+    };
+
+    Cocoon.App.WebView.on("load",{
+      success : function(){
+        //Cocoon.App.showTheWebView();
+      },
+      error : function(){
+        console.log("Cannot show the Webview for some reason :/");
+        console.log(JSON.stringify(arguments));
+      }
+    });
+
+    console.log('Creating GAI interface');
+    Cocoon.App.loadInTheWebView("analytics_web_view.html");
+
+    // Defining GAO to add stuff to the eventqueue
+    window.ga = function(){
+      var args = '';
+      for(var i = 0 ; i < arguments.length ; i++){
+        if(i > 0){
+          args += ',';
+        }
+        args += JSON.stringify(arguments[i]);
+      }
+
+      var cmd = 'window.ga(' + args + ')';
+      addToQueue(cmd);
+    };
+
+    // web property ID
+    var ua = 'UA-XXXXXXXX-X';
+
+    // set your own clientId in UUID (version 4) for each user and
+    // make sure you save it in your storage to persist a unique client identifier
+    // or use the deviceId
+    // var clientId = "7fdd1f63-8ff5-4638-a53e-c60223996716"
+    var clientId = Cocoon.Device.getDeviceId()
+
+    // disable the default cookie domain using
+    ga('create', ua, {'cookieDomain': 'none', 'storage': 'none','clientId': clientId});
+
+    // Disable file protocol checking.
+    ga('set','checkProtocolTask', null);
+
+    // Disable use of a cookie to persist a unique client identifier across pages
+    // instead
+    ga('set','checkStorageTask', null);
+
+    console.log('Set up ScreenView');
+    // send screenview to Analytics - appName is a required field
+    // https://developers.google.com/analytics/devguides/collection/analyticsjs/screens
+    ga('send', 'screenview', {
+      'appName': 'myAppName',
+      'appId': 'myAppId',
+      'appVersion': '1.0',
+      'appInstallerId': 'myInstallerId',
+      'screenName': 'my overridden screen name'
+    });
+
+  </script>
+</head>
+</html>
+
